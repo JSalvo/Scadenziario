@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FormFincancialPlanner</class>
+ <widget class="QWidget" name="FormFincancialPlanner">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>622</width>
+    <height>428</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Pianificazione Finanziaria</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QFrame" name="frame">
+       <property name="frameShape">
+        <enum>QFrame::StyledPanel</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Raised</enum>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QSpinBox" name="spinBox_year">
+          <property name="minimum">
+           <number>2015</number>
+          </property>
+          <property name="maximum">
+           <number>2040</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboBox_month">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <item>
+           <property name="text">
+            <string>Gennaio</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Febbraio</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Marzo</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Aprile</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Maggio</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Giugno</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Luglio</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Agosto</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Settembre</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Ottobre</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Novembre</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Dicembre</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_planning">
+          <property name="toolTip">
+           <string>Calcola le entrate attese per l'anno e il mese indicati a fianco</string>
+          </property>
+          <property name="text">
+           <string>Ri-calcola Pianificazione</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QTableView" name="tableView_planning"/>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="pushButton_delete">
+       <property name="text">
+        <string>Elimina</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_checkPlanning">
+       <property name="toolTip">
+        <string>Verifica che la corrente pianificazione, rispetti i valori attesi</string>
+       </property>
+       <property name="text">
+        <string>Verifica Pianificazione</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
