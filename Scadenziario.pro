@@ -19,7 +19,8 @@ SOURCES += main.cpp\
     formstatement.cpp \
     datedelegate.cpp \
     formfincancialplanner.cpp \
-    formmanagecontacts.cpp
+    formmanagecontacts.cpp \
+    qcustomplot/qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
     formperson.h \
@@ -27,7 +28,8 @@ HEADERS  += mainwindow.h \
     formstatement.h \
     datedelegate.h \
     formfincancialplanner.h \
-    formmanagecontacts.h
+    formmanagecontacts.h \
+    qcustomplot/qcustomplot.h
 
 FORMS    += mainwindow.ui \
     formperson.ui \

@@ -71,6 +71,8 @@ private:
 
     float getIncomingPresentFuture();
     float getOutcomingPresentFuture();
+
+    void buildDataForGraph(QDate startDate, float balance);
 };
 
 #endif // FORMSTATEMENT_H

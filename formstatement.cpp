@@ -86,6 +86,16 @@ void FormStatement::loadStatementsFromDb()
     model->setHeaderData(5, Qt::Horizontal, QObject::tr("Riferimento"));
     model->setHeaderData(6, Qt::Horizontal, QObject::tr("Pagato/Incassato"));
 
+    /*
+        Scadenza
+        Descrizione
+        Valore
+        Tipo
+        Riferimento
+        Pagato/Incassato
+    */
+
+
    // this->ui->visualizza_fatture->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
     this->ui->tableView_statement->horizontalHeader()->setSectionResizeMode(5, QHeaderView::Stretch);
     this->ui->tableView_statement->horizontalHeader()->setSectionResizeMode(6, QHeaderView::Stretch);
@@ -363,6 +373,47 @@ float FormStatement::getIncomingPresentFuture()
 
 float FormStatement::getOutcomingPresentFuture()
 {
+
+}
+
+void FormStatement::buildDataForGraph(QDate startDate, float balance)
+{
+    QAbstractItemModel *m = this->ui->tableView_statement->model();
+
+    if (m)
+    {
+        QSqlTableModel *model = (QSqlTableModel *)  m;
+        QVector<float> y(model->rowCount());
+        QVector<int> x(model->rowCount());
+
+
+        for (int i; i < model->rowCount(); i++)
+        {
+            QDate deadLine = model->data(model->index(i, 0)).toDate();
+            QString description = model->data(model->index(i, 1)).toString();
+            float value = model->data(model->index(i, 2)).toFloat();
+            QString type = model->data(model->index(i, 3)).toString();
+            QString payed = model->data(model->index(i, 4)).toString();
+
+            balance += value;
+
+            y[i] = balance;
+            x[i] = i;
+        }
+
+
+    }
+
+
+    /*
+        Scadenza
+        Descrizione
+        Valore
+        Tipo
+        Riferimento
+        Pagato/Incassato
+    */
+
 
 }
 
