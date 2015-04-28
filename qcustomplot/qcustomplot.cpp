@@ -9031,6 +9031,26 @@ QCP::Interaction QCPAbstractItem::selectionCategory() const
 /*!
   Constructs a QCustomPlot and sets reasonable default values.
 */
+const int QCustomPlot::QCustomPlot::graphAt(const QPoint &pos, bool onlySelectable)
+{
+    int retCode = -1;
+    double resultDistance = mSelectionTolerance;
+    for (int i = 0; i < mGraphs.size(); ++i) {
+
+        QCPGraph* graph = mGraphs.at(i);
+        if ( onlySelectable && !graph->selectable() )
+            continue;
+
+        if ( graph->clipRect().contains(pos) ) {
+            double currentDistance = graph->selectTest(pos, false);
+            if ( currentDistance >= 0 && currentDistance < resultDistance ) {
+            retCode=i;
+            }
+        }
+    }
+    return retCode;
+}
+
 QCustomPlot::QCustomPlot(QWidget *parent) :
   QWidget(parent),
   xAxis(0),
@@ -10871,6 +10891,29 @@ void QCustomPlot::wheelEvent(QWheelEvent *event)
     el->wheelEvent(event);
   
   QWidget::wheelEvent(event);
+}
+
+bool QCustomPlot::QCustomPlot::event(QEvent *event)
+{
+    if (event->type() == QEvent::ToolTip) {
+      QHelpEvent* helpEvent = static_cast<QHelpEvent*>(event);
+      QCPAbstractItem* itm = itemAt(helpEvent->pos(), true);
+      if (itm)
+          QToolTip::showText(helpEvent->globalPos(), itm->tooltip());
+
+      int ret = graphAt(helpEvent->pos(), true);
+      if ( ret != -1 )
+          QToolTip::showText(helpEvent->globalPos(), mGraphs.at(ret)->tooltip());
+
+      if ( ret==-1 && !itm) {
+          QToolTip::hideText();
+          event->ignore();
+      }
+
+      return true;
+    }
+
+    return QWidget::event(event);
 }
 
 /*! \internal
@@ -21989,6 +22032,8 @@ QCPItemRect::QCPItemRect(QCustomPlot *parentPlot) :
   setSelectedPen(QPen(Qt::blue,2));
   setBrush(Qt::NoBrush);
   setSelectedBrush(Qt::NoBrush);
+
+
 }
 
 QCPItemRect::~QCPItemRect()

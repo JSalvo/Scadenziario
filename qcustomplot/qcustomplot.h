@@ -1616,7 +1616,12 @@ class QCP_LIB_DECL QCPAbstractItem : public QCPLayerable
 public:
   QCPAbstractItem(QCustomPlot *parentPlot);
   virtual ~QCPAbstractItem();
-  
+
+  // Gianmario
+  void setTooltip(const QString& tooltip) { mTooltip = tooltip; }
+  const QString& tooltip() const { return mTooltip; }
+
+
   // getters:
   bool clipToAxisRect() const { return mClipToAxisRect; }
   QCPAxisRect *clipAxisRect() const;
@@ -1644,6 +1649,10 @@ signals:
   void selectableChanged(bool selectable);
   
 protected:
+  // Gianmario
+  QString mTooltip;
+
+
   // property members:
   bool mClipToAxisRect;
   QPointer<QCPAxisRect> mClipAxisRect;
@@ -1676,7 +1685,7 @@ private:
   friend class QCPItemAnchor;
 };
 
-
+// Gianmario
 class QCP_LIB_DECL QCustomPlot : public QWidget
 {
   Q_OBJECT
@@ -1692,6 +1701,9 @@ class QCP_LIB_DECL QCustomPlot : public QWidget
   Q_PROPERTY(Qt::KeyboardModifier multiSelectModifier READ multiSelectModifier WRITE setMultiSelectModifier)
   /// \endcond
 public:
+    // Gianmario
+    const int graphAt(const QPoint& pos, bool onlySelectable);
+
   /*!
     Defines how a layer should be inserted relative to an other layer.
 
@@ -1879,6 +1891,9 @@ protected:
   virtual void mouseMoveEvent(QMouseEvent *event);
   virtual void mouseReleaseEvent(QMouseEvent *event);
   virtual void wheelEvent(QWheelEvent *event);
+
+  // Gianmario
+  bool event(QEvent* event);
   
   // introduced virtual methods:
   virtual void draw(QCPPainter *painter);
@@ -2501,6 +2516,24 @@ class QCP_LIB_DECL QCPGraph : public QCPAbstractPlottable
   Q_PROPERTY(bool adaptiveSampling READ adaptiveSampling WRITE setAdaptiveSampling)
   /// \endcond
 public:
+
+    // Gianmario
+    void setTooltip(const QString& tooltip) { mTooltip = tooltip; }
+    const QString& tooltip() const { return mTooltip; }
+    // Gianmario
+    /*
+    Gianmario
+
+public:
+
+
+protected:
+  QString mTooltip;
+
+
+    */
+
+
   /*!
     Defines how the graph's line is represented visually in the plot. The line is drawn with the
     current pen of the graph (\ref setPen).
@@ -2578,6 +2611,9 @@ public:
   void rescaleValueAxis(bool onlyEnlarge, bool includeErrorBars) const; // overloads base class interface
   
 protected:
+  // Gianmario
+  QString mTooltip;
+
   // property members:
   QCPDataMap *mData;
   QPen mErrorPen;

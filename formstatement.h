@@ -11,6 +11,7 @@
 #include <QMessageBox>
 
 #include <datedelegate.h>
+#include "formbankbalance.h"
 
 
 namespace Ui {
@@ -27,6 +28,9 @@ public:
 
      void loadStatementsFromDb();
      void checkStatement();
+     void drawGraph();
+
+         void fillIncomingOutcomingTotal();
 
 private slots:
 
@@ -52,6 +56,16 @@ private slots:
 
     void on_radioButton_filterPresentPast_toggled(bool checked);
 
+    void on_pushButton_clicked();
+
+    void on_pushButton_bankBalance_clicked();
+
+    void on_radioButton_filterAll_toggled(bool checked);
+
+    void on_comboBox_month_activated(const QString &arg1);
+
+    void on_radioButton_filterPresentFuture_clicked(bool checked);
+
 private:
     Ui::FormStatement *ui;
     void addRecord();
@@ -63,6 +77,12 @@ private:
 
     QString filter;
 
+
+
+    float getIncoming();
+    float getOutcoming();
+
+
     float getIncoming(int y, int m);
     float getOutcoming(int y, int m);
 
@@ -72,7 +92,11 @@ private:
     float getIncomingPresentFuture();
     float getOutcomingPresentFuture();
 
-    void buildDataForGraph(QDate startDate, float balance);
+    void buildDataForGraph(float bankBalance);
+    void updateEstimatedBankBalance(QDate bankBalanceDate, float bankBalance);
+    FormBankBalance *formBankBalance;
+
+
 };
 
 #endif // FORMSTATEMENT_H

@@ -38,7 +38,10 @@ void MainWindow::on_pushButton_2_clicked()
 {
     this->fs->loadStatementsFromDb();
     this->fs->checkStatement();
+    this->fs->drawGraph();
+    this->fs->fillIncomingOutcomingTotal();
     this->fs->exec();
+
 }
 
 void MainWindow::on_pushButton_3_clicked()

@@ -6,7 +6,7 @@
 
 QT       += core gui sql
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = Scadenziario
 TEMPLATE = app
@@ -20,7 +20,9 @@ SOURCES += main.cpp\
     datedelegate.cpp \
     formfincancialplanner.cpp \
     formmanagecontacts.cpp \
-    qcustomplot/qcustomplot.cpp
+    qcustomplot/qcustomplot.cpp \
+    formbankbalance.cpp \
+    formpayments.cpp
 
 HEADERS  += mainwindow.h \
     formperson.h \
@@ -29,13 +31,17 @@ HEADERS  += mainwindow.h \
     datedelegate.h \
     formfincancialplanner.h \
     formmanagecontacts.h \
-    qcustomplot/qcustomplot.h
+    qcustomplot/qcustomplot.h \
+    formbankbalance.h \
+    formpayments.h
 
 FORMS    += mainwindow.ui \
     formperson.ui \
     formstatement.ui \
     formfincancialplanner.ui \
-    formmanagecontacts.ui
+    formmanagecontacts.ui \
+    formbankbalance.ui \
+    formpayments.ui
 
 OTHER_FILES += \
     ../Database/anagrafica.db
