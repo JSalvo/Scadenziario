@@ -11,6 +11,9 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fs = new FormStatement();
     this->fplan = new FormFincancialPlanner();
     this->fm = new FormManageContacts();
+    this->dialogTest = new DialogTest(this);
+    this->fpay = new FormPayments(this);
+    //this->dialogTest->show();
 }
 
 MainWindow::~MainWindow()
@@ -49,4 +52,9 @@ void MainWindow::on_pushButton_3_clicked()
     this->fplan->computeAllMonthlyAvailability();
     this->fplan->loadFinancialPlanningFromDb();
     this->fplan->exec();
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+    this->fpay->show();
 }

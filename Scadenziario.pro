@@ -22,7 +22,10 @@ SOURCES += main.cpp\
     formmanagecontacts.cpp \
     qcustomplot/qcustomplot.cpp \
     formbankbalance.cpp \
-    formpayments.cpp
+    formpayments.cpp \
+    dialogtest.cpp \
+    testitemdelegate.cpp \
+    currencydelegate.cpp
 
 HEADERS  += mainwindow.h \
     formperson.h \
@@ -33,7 +36,10 @@ HEADERS  += mainwindow.h \
     formmanagecontacts.h \
     qcustomplot/qcustomplot.h \
     formbankbalance.h \
-    formpayments.h
+    formpayments.h \
+    dialogtest.h \
+    testitemdelegate.h \
+    currencydelegate.h
 
 FORMS    += mainwindow.ui \
     formperson.ui \
@@ -41,7 +47,8 @@ FORMS    += mainwindow.ui \
     formfincancialplanner.ui \
     formmanagecontacts.ui \
     formbankbalance.ui \
-    formpayments.ui
+    formpayments.ui \
+    dialogtest.ui
 
 OTHER_FILES += \
     ../Database/anagrafica.db

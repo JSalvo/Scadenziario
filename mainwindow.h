@@ -6,6 +6,8 @@
 #include "formstatement.h"
 #include "formfincancialplanner.h"
 #include "formmanagecontacts.h"
+#include "dialogtest.h"
+#include "formpayments.h"
 
 namespace Ui {
 class MainWindow;
@@ -26,12 +28,17 @@ private slots:
 
     void on_pushButton_3_clicked();
 
+    void on_pushButton_4_clicked();
+
 private:
     Ui::MainWindow *ui;
     FormPerson *fp;
     FormStatement *fs;
     FormFincancialPlanner *fplan;
     FormManageContacts *fm;
+
+    DialogTest *dialogTest;
+    FormPayments *fpay;
 
 };
 

@@ -11,12 +11,15 @@ class DialogTest : public QDialog
 {
     Q_OBJECT
 
-public:
-    explicit DialogTest(QWidget *parent = 0);
-    ~DialogTest();
+    public:
+        explicit DialogTest(QWidget *parent = 0);
+        ~DialogTest();
 
-private:
-    Ui::DialogTest *ui;
+    private slots:
+        void on_pushButton_clicked();
+
+    private:
+        Ui::DialogTest *ui;
 };
 
 #endif // DIALOGTEST_H

@@ -16,8 +16,6 @@ FormManageContacts::~FormManageContacts()
 
 void FormManageContacts::on_pushButton_modifyContact_clicked()
 {
-
-
     QAbstractItemModel *model = this->ui->tableView_contacts->model();
 
     if (model)
@@ -142,8 +140,6 @@ void FormManageContacts::on_pushButton_deleteContact_clicked()
         return;
 
     }
-
-
 
     QAbstractItemModel *model = this->ui->tableView_contacts->model();
     if (model)

@@ -3,10 +3,13 @@
 
 #include <QStyledItemDelegate>
 
-class testItemDelegate : public QStyledItemDelegate
+class TestItemDelegate : public QStyledItemDelegate
 {
 public:
-    testItemDelegate();
+    TestItemDelegate();
+
+
+    void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const;
 };
 
 #endif // TESTITEMDELEGATE_H

@@ -1,3 +1,4 @@
+#include "currencydelegate.h"
 #include "formstatement.h"
 #include "ui_formstatement.h"
 
@@ -7,7 +8,6 @@ FormStatement::FormStatement(QWidget *parent) :
 {
     ui->setupUi(this);
     this->filter = "1";
-    //this->ui->frame_incomingoutcoming->hide();
     this->formBankBalance = new FormBankBalance(this);
 }
 
@@ -17,71 +17,83 @@ FormStatement::~FormStatement()
     delete ui;
 }
 
-
+// Aggiungo un record ai movimenti
 void FormStatement::addRecord()
 {
     QAbstractItemModel *model = this->ui->tableView_statement->model();
 
     if(model)
     {
+        // Per prima cosa salvo tutte le modifiche pendenti
         ((QSqlRelationalTableModel *) model)->submitAll();
+
         QSqlDatabase db = QSqlDatabase::database("ConnectionToDB");
         QSqlQuery query(db);
 
+        // Inserisco una nuovo record nel database statements
         query.prepare("INSERT INTO statements(deadline, description, value, inout, id_company) VALUES(:deadline, '', 0.0, 0, 0)");
 
         query.bindValue(":deadline", QDate::currentDate().toString("yyyy-MM-dd"));
 
+        // Se l'inserimento va a buno fine ...
         if (query.exec())
         {
+            // Ricarico nuovamente la tabella, in modo da visualizzare il nuovo record inserito
             loadStatementsFromDb();
         }
-        else
-        {
-            qDebug() << "Impossibile inserire un nuovo movimento" << query.lastError().text();
-        }
+        else        
+            qDebug() << __FILE__ << " " << __LINE__ << "Impossibile inserire un nuovo movimento" << query.lastError().text();
     }
-
 }
 
 
-
+// Carico i movimenti e li visualizzo nel QTableView
 void FormStatement::loadStatementsFromDb()
 {
     QSqlDatabase db = QSqlDatabase::database("ConnectionToDB");
     QSqlRelationalTableModel *model = new QSqlRelationalTableModel(this, db);
     QAbstractItemModel *oldModel;
     DateDelegate *customDateDelegate = new DateDelegate();
-
+    CurrencyDelegate *currencyDelegate = new CurrencyDelegate();
 
     model->setTable("statements");
+
+    // Imposto i riferimenti alle altre tabelle
     model->setRelation(4, QSqlRelation("statementtypes", "id", "value"));
     model->setRelation(5, QSqlRelation("persons", "id", "name"));
     model->setRelation(6, QSqlRelation("yesno", "id", "value"));
+
+    // Definisco l'ordinamento della tabella
     model->setSort(1, Qt::AscendingOrder);
+
+    // Imposto un filtro per ridurre la selezione
     model->setFilter(this->filter);
     model->select();
+
+    // Aggiornerò il database manualmente in modo da avere un maggiore controllo
     model->setEditStrategy(QSqlRelationalTableModel::OnManualSubmit);
 
-
-
+    // Memorizzo il vecchio model
     oldModel = this->ui->tableView_statement->model();
+
+    // Imposto il nuovo model
     this->ui->tableView_statement->setModel(model);
 
-
-
-    if (oldModel)
-    {
+    // Cancello il vecchio model
+    if (oldModel)    
         delete oldModel;
-    }
 
+    // Nascondo la colonna degli id
     this->ui->tableView_statement->setColumnHidden(0, true);
+
+    // Imposto i delegati per le rispettive colonne
     this->ui->tableView_statement->setItemDelegate(new QSqlRelationalDelegate());
     this->ui->tableView_statement->setItemDelegateForColumn(1, customDateDelegate);
+    this->ui->tableView_statement->setItemDelegateForColumn(3, currencyDelegate);
+    this->ui->tableView_statement->setItemDelegateForColumn(7, currencyDelegate);
 
-    model->setHeaderData(1, Qt::Horizontal, QObject::tr("Scadenza")); // Scadenza, Descrizione, Valore,
-    //tipo, riferimento, pagata
-
+    // Imposto i nomi degli attributi della tabella
+    model->setHeaderData(1, Qt::Horizontal, QObject::tr("Scadenza"));
     model->setHeaderData(2, Qt::Horizontal, QObject::tr("Descrizione"));
     model->setHeaderData(3, Qt::Horizontal, QObject::tr("Valore"));
     model->setHeaderData(4, Qt::Horizontal, QObject::tr("Tipo"));
@@ -89,28 +101,15 @@ void FormStatement::loadStatementsFromDb()
     model->setHeaderData(6, Qt::Horizontal, QObject::tr("Pagato/Incassato"));
     model->setHeaderData(7, Qt::Horizontal, QObject::tr("Previsione Saldo C.C."));
 
-
-    /*
-        Scadenza
-        Descrizione
-        Valore
-        Tipo
-        Riferimento
-        Pagato/Incassato
-    */
-
-
-   // this->ui->visualizza_fatture->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    // Definisco come le colonne della tabella si ridimensioneranno in funzione del contenuto
     this->ui->tableView_statement->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
     this->ui->tableView_statement->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
     this->ui->tableView_statement->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
     this->ui->tableView_statement->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
 
-
-
+    // Indico che la selezione sarà singola e per riga
     this->ui->tableView_statement->setSelectionMode(QAbstractItemView::SingleSelection);
     this->ui->tableView_statement->setSelectionBehavior(QAbstractItemView::SelectRows);
-
 }
 
 void FormStatement::checkStatement()
@@ -126,11 +125,8 @@ void FormStatement::checkStatement()
             QModelIndex idxPayd = model->index(i, 6);
             QModelIndex idxDeadline = model->index(i, 1);
 
-
-
             QDate deadline = QDate::fromString(model->data(idxDeadline).toString(), "yyyy-MM-dd");
             QDate today = QDate::currentDate();
-
 
             if (today > deadline)
             {
@@ -180,7 +176,6 @@ void FormStatement::on_pushButton_removeRecord_clicked()
     else
         qDebug() << __FILE__ << " " << __LINE__ << " Non posso recuperare i dati relativi al saldo bancario";
 
-
     this->on_pushButton_save_clicked();
 }
 
@@ -199,22 +194,14 @@ void FormStatement::removeRecord()
 
             if (QItemSelectionModel *selectionModel = this->ui->tableView_statement->selectionModel())
             {
-
                 if (selectionModel->hasSelection())
                 {
-
                     int row = selectionModel->selectedRows().at(0).row();
-                    int idRow = model->data(model->index(row, 0)).toInt();
-
-                    /*
-                    qDebug() << "Riga: " << QString::number(row) << " idRow: " << QString::number(idRow);*/
 
                     model->removeRow(row);
 
-                    if (!((QSqlRelationalTableModel *) model)->submitAll())
-                    {
-                        qDebug() << "Non è stato possibile eliminare il record!!!";
-                    }
+                    if (!((QSqlRelationalTableModel *) model)->submitAll())                    
+                        qDebug() << __FILE__ << " " << __LINE__ << "Non è stato possibile eliminare il record!!!";
                 }
             }
         }
@@ -231,12 +218,10 @@ void FormStatement::setFilter()
 
     QAbstractItemModel *model = this->ui->tableView_statement->model();
 
-
     if (model)
     {
         ((QSqlRelationalTableModel *) model)->submitAll();
         this->loadStatementsFromDb();
-
     }
 }
 
@@ -265,7 +250,6 @@ void FormStatement::setFilter(int year, int month)
         this->ui->lineEdit_incoming->setText(QString::number(incoming));
         this->ui->lineEdit_outcoming->setText(QString::number(outcoming));
         this->ui->lineEdit_total->setText(QString::number(total));
-
     }
 }
 
@@ -293,12 +277,10 @@ void FormStatement::setFilter(int pastfuture)
             ((QSqlRelationalTableModel *) model)->submitAll();
             this->loadStatementsFromDb();
         }
-
     }
     else
     {
         QString j = "CAST(strftime('%J', deadline) as integer)>= ";
-
 
         this->filter = j.append(QString::number(pd.toJulianDay()));
 
@@ -311,7 +293,6 @@ void FormStatement::setFilter(int pastfuture)
             ((QSqlRelationalTableModel *) model)->submitAll();
             this->loadStatementsFromDb();
         }
-
     }
 }
 
@@ -320,16 +301,11 @@ void FormStatement::fillIncomingOutcomingTotal()
     float incoming = getIncoming();
     float outcoming = getOutcoming();
     float total = incoming - outcoming;
+    QLocale l;
 
-
-    this->ui->lineEdit_incoming->setText(QString::number(incoming, 'f', 2));
-    this->ui->lineEdit_outcoming->setText(QString::number(outcoming, 'f', 2));
-
-    this->ui->lineEdit_total->setText(QString::number(total, 'f', 2));
-
-
-
-
+    this->ui->lineEdit_incoming->setText(l.toString(incoming, 'f', 2).append(QChar(8364)));
+    this->ui->lineEdit_outcoming->setText(l.toString(outcoming, 'f', 2).append(QChar(8364)));
+    this->ui->lineEdit_total->setText(l.toString(total, 'f', 2).append(QChar(8364)));
 }
 
 float FormStatement::getIncoming()
@@ -339,17 +315,13 @@ float FormStatement::getIncoming()
 
     if (model)
     {
-
-
         QSqlTableModel *m = (QSqlTableModel *) model;
 
         for (int i=0; i<model->rowCount(); i++)
         {
             if (m->data(m->index(i, 4)).toString().compare("Entrata") == 0)
                 result += m->data(m->index(i, 3)).toFloat();
-
         }
-
     }
 
     return result;
@@ -362,24 +334,16 @@ float FormStatement::getOutcoming()
 
     if (model)
     {
-
-
         QSqlTableModel *m = (QSqlTableModel *) model;
 
         for (int i=0; i<model->rowCount(); i++)
         {
             if (m->data(m->index(i, 4)).toString().compare("Uscita") == 0)
                 result += m->data(m->index(i, 3)).toFloat();
-
         }
-
     }
-
     return result;
-
 }
-
-
 
 float FormStatement::getIncoming(int y, int m)
 {
@@ -405,7 +369,6 @@ float FormStatement::getIncoming(int y, int m)
         query.next();
 
         return (query.value(0).toFloat());
-
     }
     else
         qDebug() << "Non riesco ad ottenere i totali dalla tabella statements" << query.lastError().text();
@@ -443,7 +406,6 @@ float FormStatement::getOutcoming(int y, int m)
         qDebug() << "Non riesco ad ottenere i totali dalla tabella statements";
 
     return (0.0);
-
 }
 
 float FormStatement::getIncomingPresentPast()
@@ -469,7 +431,6 @@ float FormStatement::getOutcomingPresentFuture()
 void FormStatement::buildDataForGraph(float bankBalance)
 {
     QAbstractItemModel *m = this->ui->tableView_statement->model();
-    float b = bankBalance;
 
     if (m)
     {
@@ -485,16 +446,13 @@ void FormStatement::buildDataForGraph(float bankBalance)
 
         for (int i=0; i < limit; i++)
         {
-            QDate deadLine = model->data(model->index(i, 1)).toDate();
             QString description = model->data(model->index(i, 2)).toString();
             float estimatedBankBalance = model->data(model->index(i, 7)).toFloat();
 
             x[i] = i;
             ticks << (i);
 
-
             labels << description;
-
 
             if (estimatedBankBalance > 0)
             {
@@ -506,20 +464,7 @@ void FormStatement::buildDataForGraph(float bankBalance)
                 y[i] = 0;
                 yneg[i] = estimatedBankBalance;
             }
-
         }
-
-        /*
-        // create graph and assign data to it:
-        customPlot->addGraph();
-        customPlot->graph(0)->setData(x, y);
-        // give the axes some labels:
-        customPlot->xAxis->setLabel("x");
-        customPlot->yAxis->setLabel("y");
-        // set axes ranges, so we see all data:
-        customPlot->xAxis->setRange(-1, 1);
-        customPlot->yAxis->setRange(0, 1);
-        customPlot->replot();*/
 
         qDebug() << "Grafici rimossi" << this->ui->widget_graph->clearGraphs();
         this->ui->widget_graph->clearItems();
@@ -527,43 +472,27 @@ void FormStatement::buildDataForGraph(float bankBalance)
 
         this->ui->widget_graph->addGraph();
 
-        //this->ui->widget_graph->graph(0)->setPen(QPen(Qt::blue)); // line color blue for first graph
-        //this->ui->widget_graph->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
-
-
-        //this->ui->widget_graph->graph(0)->setData(x, y);
         this->ui->widget_graph->xAxis->setAutoTicks(false);
         this->ui->widget_graph->xAxis->setAutoTickLabels(false);
         this->ui->widget_graph->xAxis->setTickLabelRotation(-60);
 
-        this->ui->widget_graph->xAxis->setLabel("x");
-        this->ui->widget_graph->yAxis->setLabel("y");
+        this->ui->widget_graph->xAxis->setLabel("Movimenti");
+        this->ui->widget_graph->yAxis->setLabel("Euro");
 
         this->ui->widget_graph->xAxis->setTickVector(ticks);
         this->ui->widget_graph->xAxis->setTickVectorLabels(labels);
         this->ui->widget_graph->xAxis->setSubTickCount(0);
 
-        //this->ui->widget_graph->xAxis->setRange(0, model->rowCount());
-       // this->ui->widget_graph->yAxis->setRange(-100000, 400000);
-
-
-
         QCPBars *bars1 = new QCPBars(this->ui->widget_graph->xAxis, this->ui->widget_graph->yAxis);
         this->ui->widget_graph->addPlottable(bars1);
-        //bars1->setWidth(9/(double)x3.size());
         bars1->setData(x, y);
         bars1->setPen(Qt::NoPen);
         bars1->setBrush(QColor(10, 140, 70, 160));
 
-
-
-
         this->ui->widget_graph->addGraph();
-        //this->ui->widget_graph->graph(1)->setData(x, yneg);
 
         QCPBars *bars2 = new QCPBars(this->ui->widget_graph->xAxis, this->ui->widget_graph->yAxis);
         this->ui->widget_graph->addPlottable(bars2);
-        //bars1->setWidth(9/(double)x3.size());
         bars2->setData(x, yneg);
         bars2->setPen(Qt::NoPen);
         bars2->setBrush(QColor(255, 0, 0, 160));
@@ -574,22 +503,7 @@ void FormStatement::buildDataForGraph(float bankBalance)
         this->ui->widget_graph->replot();
 
         qDebug() << "Numero oggetti: " << this->ui->widget_graph->itemCount();
-
-
-
     }
-
-
-    /*
-        Scadenza
-        Descrizione
-        Valore
-        Tipo
-        Riferimento
-        Pagato/Incassato
-    */
-
-
 }
 
 
@@ -650,8 +564,6 @@ void FormStatement::updateEstimatedBankBalance(QDate bankBalanceDate, float bank
     }
     else
         qDebug() << __FILE__ << " " << __LINE__ << " ";
-
-
 }
 
 void FormStatement::drawGraph()
@@ -660,7 +572,6 @@ void FormStatement::drawGraph()
     QSqlQuery query(db);
 
     query.prepare("SELECT date, value FROM bankbalance WHERE id=0");
-
 
     if (query.exec())
     {
@@ -674,13 +585,9 @@ void FormStatement::drawGraph()
             qDebug() << __FILE__ << " " << __LINE__ << " " << " OK";
 
             this->buildDataForGraph(bankBalance);
-
         }
         else
             qDebug() << __FILE__ << " " << __LINE__ << " " << "Impossibile recuperare i dati del saldo bancario.";
-
-
-
     }
     else
         qDebug() << __FILE__ << " " << __LINE__ << " ";
@@ -697,24 +604,16 @@ void FormStatement::on_pushButton_save_clicked()
     QAbstractItemModel *model = this->ui->tableView_statement->model();
     QMessageBox msg;
 
-
     if (model)
     {
         ((QSqlRelationalTableModel *) model)->submitAll();
 
-
-        //this->loadStatementsFromDb();
-
         msg.setText("Salvataggio avvenuto con successo!!!");
-
     }
     else
         msg.setText("Non è stato possibile salvare le modifiche apportate!!!");
 
-
      msg.exec();
-
-
 
      QSqlDatabase db = QSqlDatabase::database("ConnectionToDB");
      QSqlQuery query(db);
@@ -735,17 +634,9 @@ void FormStatement::on_pushButton_save_clicked()
      else
          qDebug() << __FILE__ << " " << __LINE__ << " Non posso recuperare i dati relativi al saldo bancario";
 
-
-
-
-
-
       this->loadStatementsFromDb();
       drawGraph();
-
 }
-
-
 
 void FormStatement::on_comboBox_month_activated(int index)
 {
@@ -773,9 +664,7 @@ void FormStatement::on_radioButton_filterYearMonth_toggled(bool checked)
         setFilter(y, m);
         this->ui->frame_incomingoutcoming->show();
         drawGraph();
-
     }
-
 }
 
 void FormStatement::on_spinBox_year_valueChanged(int arg1)
@@ -813,7 +702,6 @@ void FormStatement::on_radioButton_filterPresentPast_toggled(bool checked)
 {
     if (checked)
     {
-
         this->setFilter(0);
         drawGraph();
         this->fillIncomingOutcomingTotal();
@@ -849,10 +737,6 @@ void FormStatement::on_pushButton_bankBalance_clicked()
     }
     else
         qDebug() << __FILE__ << " " << __LINE__ << " Non posso recuperare i dati relativi al saldo bancario";
-
-
-
-
 
     drawGraph();
 }

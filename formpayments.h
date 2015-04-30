@@ -7,13 +7,13 @@ namespace Ui {
 class formpayments;
 }
 
-class formpayments : public QDialog
+class FormPayments : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit formpayments(QWidget *parent = 0);
-    ~formpayments();
+    explicit FormPayments(QWidget *parent = 0);
+    ~FormPayments();
 
 private:
     Ui::formpayments *ui;
