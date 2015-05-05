@@ -646,6 +646,7 @@ void FormStatement::on_comboBox_month_activated(int index)
 
         setFilter(y, index+1);
         drawGraph();
+        this->fillIncomingOutcomingTotal();
     }
 }
 
@@ -664,6 +665,7 @@ void FormStatement::on_radioButton_filterYearMonth_toggled(bool checked)
         setFilter(y, m);
         this->ui->frame_incomingoutcoming->show();
         drawGraph();
+        this->fillIncomingOutcomingTotal();
     }
 }
 
@@ -675,6 +677,7 @@ void FormStatement::on_spinBox_year_valueChanged(int arg1)
 
         setFilter(arg1, m);
         drawGraph();
+        this->fillIncomingOutcomingTotal();
     }
 }
 

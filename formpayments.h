@@ -15,8 +15,16 @@ public:
     explicit FormPayments(QWidget *parent = 0);
     ~FormPayments();
 
+private slots:
+    void on_pushButton_generateStatements_clicked();
+
 private:
     Ui::formpayments *ui;
+
+    QList<float> getRatioPayment(QString s);
+    QList<int> getDelayForPayment(QString s);
+
+
 };
 
 #endif // FORMPAYMENTS_H

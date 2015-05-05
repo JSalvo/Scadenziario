@@ -8,7 +8,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     this->fp = new FormPerson();
+
     this->fs = new FormStatement();
+    this->fs->setWindowFlags(Qt::Window);
+
     this->fplan = new FormFincancialPlanner();
     this->fm = new FormManageContacts();
     this->dialogTest = new DialogTest(this);
