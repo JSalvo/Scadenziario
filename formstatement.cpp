@@ -112,6 +112,7 @@ void FormStatement::loadStatementsFromDb()
     this->ui->tableView_statement->setSelectionBehavior(QAbstractItemView::SelectRows);
 }
 
+// Eseguo un controllo sui movimenti per rilevare ciò che non è stato pagato nella corretta scadenza
 void FormStatement::checkStatement()
 {
     QAbstractItemModel *m = this->ui->tableView_statement->model();
@@ -179,6 +180,8 @@ void FormStatement::on_pushButton_removeRecord_clicked()
     this->on_pushButton_save_clicked();
 }
 
+
+// Rimuove il record selezionato
 void FormStatement::removeRecord()
 {
     QMessageBox::StandardButton reply;
@@ -190,16 +193,20 @@ void FormStatement::removeRecord()
 
         if (model)
         {
-            ((QSqlRelationalTableModel) model).submitAll(); // ??? perchè funziona???
+            //((QSqlRelationalTableModel) model).submitAll(); // ??? perchè funziona???
 
             if (QItemSelectionModel *selectionModel = this->ui->tableView_statement->selectionModel())
             {
+                // Se nella tabella è presente una selezione
                 if (selectionModel->hasSelection())
                 {
+                    // ...ricavo la riga selezionata ...
                     int row = selectionModel->selectedRows().at(0).row();
 
+                    // ... la elimino dal modello.
                     model->removeRow(row);
 
+                    // Infine aggiorno il db.
                     if (!((QSqlRelationalTableModel *) model)->submitAll())                    
                         qDebug() << __FILE__ << " " << __LINE__ << "Non è stato possibile eliminare il record!!!";
                 }
@@ -308,6 +315,7 @@ void FormStatement::fillIncomingOutcomingTotal()
     this->ui->lineEdit_total->setText(l.toString(total, 'f', 2).append(QChar(8364)));
 }
 
+// Calcolo le entrate dei movimenti visualizzati
 float FormStatement::getIncoming()
 {
     QAbstractItemModel *model = this->ui->tableView_statement->model();
@@ -327,6 +335,7 @@ float FormStatement::getIncoming()
     return result;
 }
 
+// Calcolo le uscite dei movimenti visualizzati
 float FormStatement::getOutcoming()
 {
     QAbstractItemModel *model = this->ui->tableView_statement->model();
@@ -345,6 +354,8 @@ float FormStatement::getOutcoming()
     return result;
 }
 
+
+// Calcolo le entrate relative ad un dato anno e mese
 float FormStatement::getIncoming(int y, int m)
 {
     QSqlDatabase db = QSqlDatabase::database("ConnectionToDB");
@@ -376,6 +387,7 @@ float FormStatement::getIncoming(int y, int m)
     return (0.0);
 }
 
+// Calcolo le uscite relative ad un dato anno e mese
 float FormStatement::getOutcoming(int y, int m)
 {
     QSqlDatabase db = QSqlDatabase::database("ConnectionToDB");
@@ -428,6 +440,7 @@ float FormStatement::getOutcomingPresentFuture()
 
 }
 
+// Preparo i dati per il grafico e poi lo visualizzo
 void FormStatement::buildDataForGraph(float bankBalance)
 {
     QAbstractItemModel *m = this->ui->tableView_statement->model();
@@ -446,60 +459,90 @@ void FormStatement::buildDataForGraph(float bankBalance)
 
         for (int i=0; i < limit; i++)
         {
+            // Descrizione
             QString description = model->data(model->index(i, 2)).toString();
+            // Scadenza
+            QString deadline = model->data(model->index(i, 1)).toString();
+            // Riferimento - Azienda debitrice/creditrice
+            QString reference = model->data(model->index(i, 5)).toString(); ; // Company
+
+            // Recupero la stima del conto corrente nell'ipotesi che questo pagamento venga effettuato
             float estimatedBankBalance = model->data(model->index(i, 7)).toFloat();
 
             x[i] = i;
+
+            // Compilo la lista che contiene la posizione dei "ticks"
             ticks << (i);
 
-            labels << description;
+            // Compilo la lista delle etichetta per l'ascissa
+            //labels << QDate::fromString(deadline, "yyyy-MM-dd").toString("dd/MM/yyyy");
+            labels << reference;
 
             if (estimatedBankBalance > 0)
             {
+                // Compilo il vettore della stima di conto corrente positivo
                 y[i] = estimatedBankBalance;
                 yneg[i] = 0;
             }
             else
             {
+                // Compilo il vettore della stima di conto corrente negativo
                 y[i] = 0;
                 yneg[i] = estimatedBankBalance;
             }
         }
 
+        // Cancello tutti i grafici precedentemente disegnati
         qDebug() << "Grafici rimossi" << this->ui->widget_graph->clearGraphs();
         this->ui->widget_graph->clearItems();
         this->ui->widget_graph->clearPlottables();
 
+        // Aggiungo un grafico (previsioni di bilancio positivo)
         this->ui->widget_graph->addGraph();
 
+        // I tick (le lineette) sarano impostati manualmente
         this->ui->widget_graph->xAxis->setAutoTicks(false);
+        // Le etichette dei tick saranno impostate manualmente
         this->ui->widget_graph->xAxis->setAutoTickLabels(false);
+        // Le etichette saranno ruotate di -60°
         this->ui->widget_graph->xAxis->setTickLabelRotation(-60);
 
+        // Imposto il nome dell'asse x
         this->ui->widget_graph->xAxis->setLabel("Movimenti");
+        // Imposto il nome dell'assy y
         this->ui->widget_graph->yAxis->setLabel("Euro");
 
+        // Imposto il vettore dei tick
         this->ui->widget_graph->xAxis->setTickVector(ticks);
+        // Imposto ilvettore delle etichette da associare ai tick
         this->ui->widget_graph->xAxis->setTickVectorLabels(labels);
+        // Non metto nessun sub tick
         this->ui->widget_graph->xAxis->setSubTickCount(0);
 
+        // Imposto i valori da visualizzare per il grafico
         QCPBars *bars1 = new QCPBars(this->ui->widget_graph->xAxis, this->ui->widget_graph->yAxis);
         this->ui->widget_graph->addPlottable(bars1);
         bars1->setData(x, y);
         bars1->setPen(Qt::NoPen);
-        bars1->setBrush(QColor(10, 140, 70, 160));
+        bars1->setBrush(QColor(10, 140, 70, 160)); // Pseudo verde per i valori positivi
 
+
+        // Aggiungo un grafico (previsione di bilancio negativo)
         this->ui->widget_graph->addGraph();
 
+        // Imposto i valori negativi della previsione di bilancio (e li visualizzo con un altro colore)
         QCPBars *bars2 = new QCPBars(this->ui->widget_graph->xAxis, this->ui->widget_graph->yAxis);
         this->ui->widget_graph->addPlottable(bars2);
         bars2->setData(x, yneg);
         bars2->setPen(Qt::NoPen);
-        bars2->setBrush(QColor(255, 0, 0, 160));
+        bars2->setBrush(QColor(255, 0, 0, 160)); // Rosso per i valori negativi
 
+        // Il grafico potra essere "traslato", zoomato, posso selezionare gli assi, la legenda e i grafici
         this->ui->widget_graph->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectAxes |
                                           QCP::iSelectLegend | QCP::iSelectPlottables);
+        // Effetto il rescaling automatico per visualizzare  dentro tutta l'area disponibile
         this->ui->widget_graph->rescaleAxes();
+        // Disegno
         this->ui->widget_graph->replot();
 
         qDebug() << "Numero oggetti: " << this->ui->widget_graph->itemCount();
@@ -507,7 +550,8 @@ void FormStatement::buildDataForGraph(float bankBalance)
 }
 
 
-
+// Scorro la tabella dei movimenti e per ciascun movimento, ricalcolo la stima del conto corrente dopo
+// il pagamento del movimento stesso
 void FormStatement::updateEstimatedBankBalance(QDate bankBalanceDate, float bankBalance)
 {
     QSqlDatabase db = QSqlDatabase::database("ConnectionToDB");
@@ -519,33 +563,37 @@ void FormStatement::updateEstimatedBankBalance(QDate bankBalanceDate, float bank
 
     if (query.exec())
     {
+        // Questo aggiornamento lo eseguo in una transazione per evitare spiacevoli sorprese
         if (db.transaction())
         {
             QSqlQuery q(db);
 
             while(query.next())
             {
-
-                int id = query.value(0).toInt();
-                QDate deadLine = QDate::fromString(query.value(1).toString(), "yyyy-MM-dd");
-                float value = query.value(2).toFloat();
-                int inout = query.value(3).toInt();
+                int id = query.value(0).toInt(); // id del movimento
+                QDate deadLine = QDate::fromString(query.value(1).toString(), "yyyy-MM-dd"); // scadenza movimento
+                float value = query.value(2).toFloat(); // importo movimento
+                int inout = query.value(3).toInt(); // tipo movimento (incasso o pagamento)
                 float nv=0.0;
 
+                // Se la scadenza è successiva alla data di riferimento del saldo bancario reale di cui dispongo..
                 if (deadLine >= bankBalanceDate)
                 {
                     //qDebug() << __FILE__ << " " << __LINE__ << " Aggiornamento di bilancio";
 
+                    // Se il movimento è un pagamento da eseguire
                     if (inout == 0)
-                        bb = bb - value;
+                        bb = bb - value; // sottraggo al bilancio bancario presunto l'importo del pagamento
                     else
-                        bb  = bb + value;
+                        bb  = bb + value; // aggiungo al bilancio bancario presunto l'importo del pagamento
 
                     nv = bb;
                 }
                 else
-                    nv = 0.0;
+                    nv = 0.0; // per le scadenze antecedenti alla data di riferimento del saldo bancario reale
+                               // imposto un saldo presunto nullo
 
+                // Aggiorno il presunto saldo bancario di questo movimento
                 q.prepare("UPDATE statements SET estimatedbankbalance=:nv where id=:id");
                 q.bindValue(":nv", nv);
                 q.bindValue(":id", id);
