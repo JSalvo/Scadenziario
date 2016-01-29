@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->fm = new FormManageContacts();
     this->dialogTest = new DialogTest(this);
     this->fpay = new FormPayments(this);
+    this->ui->pushButton_4->setVisible(false);
     //this->dialogTest->show();
 }
 

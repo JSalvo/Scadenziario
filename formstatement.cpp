@@ -121,6 +121,9 @@ void FormStatement::checkStatement()
     {
         QSqlRelationalTableModel * model = (QSqlRelationalTableModel *) m;
 
+        while (model->canFetchMore())
+            model->fetchMore();
+
         for (int i=0; i<model->rowCount(); i++)
         {
             QModelIndex idxPayd = model->index(i, 6);
@@ -325,7 +328,10 @@ float FormStatement::getIncoming()
     {
         QSqlTableModel *m = (QSqlTableModel *) model;
 
-        for (int i=0; i<model->rowCount(); i++)
+        while (m->canFetchMore())
+            m->fetchMore();
+
+        for (int i=0; i<m->rowCount(); i++)
         {
             if (m->data(m->index(i, 4)).toString().compare("Entrata") == 0)
                 result += m->data(m->index(i, 3)).toFloat();
@@ -345,7 +351,10 @@ float FormStatement::getOutcoming()
     {
         QSqlTableModel *m = (QSqlTableModel *) model;
 
-        for (int i=0; i<model->rowCount(); i++)
+        while (m->canFetchMore())
+            m->fetchMore();
+
+        for (int i=0; i<m->rowCount(); i++)
         {
             if (m->data(m->index(i, 4)).toString().compare("Uscita") == 0)
                 result += m->data(m->index(i, 3)).toFloat();
@@ -448,6 +457,10 @@ void FormStatement::buildDataForGraph(float bankBalance)
     if (m)
     {
         QSqlTableModel *model = (QSqlTableModel *)  m;
+
+        while (model->canFetchMore())
+            model->fetchMore();
+
         int limit = model->rowCount();
         QVector<double> y(limit);
         QVector<double> x(limit);
