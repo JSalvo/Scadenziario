@@ -29,6 +29,7 @@ public:
      void loadStatementsFromDb();
      void checkStatement();
      void drawGraph();
+     void setInitConfig();
 
          void fillIncomingOutcomingTotal();
 
@@ -66,6 +67,12 @@ private slots:
 
     void on_radioButton_filterPresentFuture_clicked(bool checked);
 
+    void on_radioButton_filterYearMonth_clicked();
+
+    void on_radioButton_filterYearMonth_clicked(bool checked);
+
+    void on_lineEdit_filter_textChanged(const QString &arg1);
+
 private:
     Ui::FormStatement *ui;
     void addRecord();
@@ -95,6 +102,8 @@ private:
     void buildDataForGraph(float bankBalance);
     void updateEstimatedBankBalance(QDate bankBalanceDate, float bankBalance);
     FormBankBalance *formBankBalance;
+
+    QString get_company_id_list_from_like_sql(QString filter);
 
 
 };

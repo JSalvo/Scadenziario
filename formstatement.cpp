@@ -67,7 +67,22 @@ void FormStatement::loadStatementsFromDb()
     model->setSort(1, Qt::AscendingOrder);
 
     // Imposto un filtro per ridurre la selezione
-    model->setFilter(this->filter);
+
+    QString likeFilter = "description LIKE '%" + this->ui->lineEdit_filter->text() + "%'" ;
+
+    QString likeCompanyFilter = "()";
+    likeCompanyFilter = get_company_id_list_from_like_sql(this->ui->lineEdit_filter->text());
+
+    qDebug() << "Comapany id filter: " << likeCompanyFilter << " - Fine";
+
+    if (this->ui->lineEdit_filter->text().replace(" ", "").compare("") == 0)
+    {
+        model->setFilter(this->filter + " and " + likeFilter);
+    }
+    else
+        model->setFilter(this->filter + " and (" + likeFilter + " or id_company in " + likeCompanyFilter + ")");
+
+
     model->select();
 
     // Aggiornerò il database manualmente in modo da avere un maggiore controllo
@@ -627,6 +642,53 @@ void FormStatement::updateEstimatedBankBalance(QDate bankBalanceDate, float bank
         qDebug() << __FILE__ << " " << __LINE__ << " ";
 }
 
+QString FormStatement::get_company_id_list_from_like_sql(QString filter)
+{
+    QSqlDatabase db = QSqlDatabase::database("ConnectionToDB");
+    QSqlQuery query(db);
+
+    QString result = "";
+    bool firstResult = true;
+
+    query.prepare("SELECT id FROM persons WHERE name LIKE '%" + filter + "%'");
+
+
+    if (query.exec())
+    {
+        while(query.next())
+        {
+            if (firstResult)
+            {
+                result = "(" + QString::number(query.value("id").toInt());
+            }
+            else
+            {
+                result = result + "," + QString::number(query.value("id").toInt());
+            }
+
+            firstResult = false;
+        }
+
+        result = result + ")";
+        if (firstResult)
+            return("()");
+        else
+            return(result);
+    }
+
+    return("()");
+}
+
+void FormStatement::setInitConfig()
+{
+
+    QDate currentDate = QDate::currentDate();
+
+    this->ui->spinBox_year->setValue(currentDate.year());
+    this->ui->comboBox_month->setCurrentIndex(currentDate.month());
+    this->ui->radioButton_filterYearMonth->setChecked(true);
+}
+
 void FormStatement::drawGraph()
 {
     QSqlDatabase db = QSqlDatabase::database("ConnectionToDB");
@@ -818,4 +880,21 @@ void FormStatement::on_comboBox_month_activated(const QString &arg1)
 void FormStatement::on_radioButton_filterPresentFuture_clicked(bool checked)
 {
 
+}
+
+void FormStatement::on_radioButton_filterYearMonth_clicked()
+{
+
+}
+
+void FormStatement::on_radioButton_filterYearMonth_clicked(bool checked)
+{
+
+}
+
+void FormStatement::on_lineEdit_filter_textChanged(const QString &arg1)
+{
+    this->loadStatementsFromDb();
+    drawGraph();
+    this->fillIncomingOutcomingTotal();
 }

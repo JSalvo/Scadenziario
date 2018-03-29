@@ -3,6 +3,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QDebug>
+#include <QDir>
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +17,8 @@ int main(int argc, char *argv[])
     // Espressione regolare per riconoscere espressioni tipo "25%, 25%, 25%, 25%" usate ad
     // esempio per indicare come un pagamento debba essere suddiviso in 4 tranche
     QRegExp rx2("^\\s*[0-9]+\\s*%\\s*(,\\s*[0-9]+\\s*%)*\\s*$");
+
+    qDebug() << "Percorso corrente: " << QDir::currentPath();
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "ConnectionToDB");
     db.setDatabaseName("../Database/anagrafica.db");

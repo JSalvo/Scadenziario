@@ -11,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->fs = new FormStatement();
     this->fs->setWindowFlags(Qt::Window);
+    //this->fs->setInitConfig();
 
     this->fplan = new FormFincancialPlanner();
     this->fm = new FormManageContacts();
@@ -45,6 +46,7 @@ void MainWindow::on_pushButton_2_clicked()
 {
     this->fs->loadStatementsFromDb();
     this->fs->checkStatement();
+    this->fs->setInitConfig(); // Imposta i dati al mese corrente
     this->fs->drawGraph();
     this->fs->fillIncomingOutcomingTotal();
     this->fs->exec();
