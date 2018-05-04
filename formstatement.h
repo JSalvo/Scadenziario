@@ -73,6 +73,14 @@ private slots:
 
     void on_lineEdit_filter_textChanged(const QString &arg1);
 
+    void on_lineEdit_filter_textEdited(const QString &arg1);
+
+    void on_radioButton_inOut_clicked(bool checked);
+
+    void on_radioButton_in_clicked(bool checked);
+
+    void on_radioButton_out_clicked();
+
 private:
     Ui::FormStatement *ui;
     void addRecord();

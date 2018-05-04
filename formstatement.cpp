@@ -60,7 +60,7 @@ void FormStatement::loadStatementsFromDb()
 
     // Imposto i riferimenti alle altre tabelle
     model->setRelation(4, QSqlRelation("statementtypes", "id", "value"));
-    model->setRelation(5, QSqlRelation("persons", "id", "name"));
+    model->setRelation(5, QSqlRelation("ordered_persons", "id", "name"));
     model->setRelation(6, QSqlRelation("yesno", "id", "value"));
 
     // Definisco l'ordinamento della tabella
@@ -77,10 +77,35 @@ void FormStatement::loadStatementsFromDb()
 
     if (this->ui->lineEdit_filter->text().replace(" ", "").compare("") == 0)
     {
-        model->setFilter(this->filter + " and " + likeFilter);
+        if (this->ui->radioButton_inOut->isChecked())
+        {
+            model->setFilter(this->filter + " and " + likeFilter);
+        }
+        else if (this->ui->radioButton_in->isChecked())
+        {
+             model->setFilter(this->filter + " and inout=1 and " + likeFilter);
+        }
+        else
+        {
+            model->setFilter(this->filter + " and inout=0 and " + likeFilter);
+        }
     }
     else
-        model->setFilter(this->filter + " and (" + likeFilter + " or id_company in " + likeCompanyFilter + ")");
+    {
+        if (this->ui->radioButton_inOut->isChecked())
+        {
+            model->setFilter(this->filter + " and (" + likeFilter + " or id_company in " + likeCompanyFilter + ")");
+        }
+        else if (this->ui->radioButton_in->isChecked())
+        {
+            model->setFilter(this->filter + " and inout=1 and (" + likeFilter + " or id_company in " + likeCompanyFilter + ")");
+        }
+        else
+        {
+            model->setFilter(this->filter + " and inout=0 and (" + likeFilter + " or id_company in " + likeCompanyFilter + ")");
+        }
+    }
+
 
 
     model->select();
@@ -503,8 +528,8 @@ void FormStatement::buildDataForGraph(float bankBalance)
             ticks << (i);
 
             // Compilo la lista delle etichetta per l'ascissa
-            //labels << QDate::fromString(deadline, "yyyy-MM-dd").toString("dd/MM/yyyy");
-            labels << reference;
+            labels << QDate::fromString(deadline, "yyyy-MM-dd").toString("dd/MM/yyyy");
+            //labels << reference;
 
             if (estimatedBankBalance > 0)
             {
@@ -893,6 +918,32 @@ void FormStatement::on_radioButton_filterYearMonth_clicked(bool checked)
 }
 
 void FormStatement::on_lineEdit_filter_textChanged(const QString &arg1)
+{
+    this->loadStatementsFromDb();
+    drawGraph();
+    this->fillIncomingOutcomingTotal();
+}
+
+void FormStatement::on_lineEdit_filter_textEdited(const QString &arg1)
+{
+
+}
+
+void FormStatement::on_radioButton_inOut_clicked(bool checked)
+{
+    this->loadStatementsFromDb();
+    drawGraph();
+    this->fillIncomingOutcomingTotal();
+}
+
+void FormStatement::on_radioButton_in_clicked(bool checked)
+{
+    this->loadStatementsFromDb();
+    drawGraph();
+    this->fillIncomingOutcomingTotal();
+}
+
+void FormStatement::on_radioButton_out_clicked()
 {
     this->loadStatementsFromDb();
     drawGraph();
